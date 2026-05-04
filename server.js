@@ -13,7 +13,7 @@ const types = {
 
 http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url.split("?")[0]);
-  const filePath = path.join(ROOT, urlPath === "/" ? "/shopping-list.html" : urlPath);
+  const filePath = path.join(ROOT, urlPath === "/" ? "/index.html" : urlPath);
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403); res.end("Forbidden"); return;
   }
