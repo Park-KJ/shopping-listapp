@@ -60,6 +60,17 @@
   }
   #addBtn:hover { background: #5568d3; }
   #addBtn:active { transform: scale(0.97); }
+  #addBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .status {
+    padding: 10px 16px;
+    font-size: 13px;
+    text-align: center;
+    background: #f7f7f9;
+    color: #666;
+    border-bottom: 1px solid #eee;
+  }
+  .status.error { background: #fde8e6; color: #c0392b; }
+  .status.hidden { display: none; }
   .list {
     list-style: none;
     max-height: 50vh;
@@ -131,13 +142,15 @@
   <div class="container">
     <header>
       <h1>🛒 쇼핑 리스트</h1>
-      <div class="subtitle">필요한 물건을 추가하세요</div>
+      <div class="subtitle">Supabase에 동기화됨</div>
     </header>
 
     <div class="input-row">
       <input type="text" id="itemInput" placeholder="아이템 이름 입력..." maxlength="100" autocomplete="off">
       <button id="addBtn">추가</button>
     </div>
+
+    <div class="status hidden" id="status"></div>
 
     <ul class="list" id="list"></ul>
 
@@ -147,27 +160,32 @@
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const STORAGE_KEY = "shopping-list-items";
+  const SUPABASE_URL = "https://jnivnctqgxvkapxqqtfw.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cOiGR8HCv9eHiwf9NKveNg_jPDKNwWm";
+  const TABLE = "shopping_items";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
   const input = document.getElementById("itemInput");
   const addBtn = document.getElementById("addBtn");
   const list = document.getElementById("list");
   const count = document.getElementById("count");
   const clearBtn = document.getElementById("clearBtn");
+  const statusEl = document.getElementById("status");
 
-  let items = loadItems();
+  let items = [];
 
-  function loadItems() {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
+  function showStatus(message, isError = false) {
+    statusEl.textContent = message;
+    statusEl.classList.remove("hidden");
+    statusEl.classList.toggle("error", isError);
   }
 
-  function saveItems() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  function clearStatus() {
+    statusEl.classList.add("hidden");
+    statusEl.textContent = "";
   }
 
   function render() {
@@ -210,40 +228,87 @@
     count.textContent = `${items.length}개 항목 · 남은 ${remaining}개`;
   }
 
-  function addItem() {
+  async function loadItems() {
+    showStatus("불러오는 중...");
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) {
+      showStatus("불러오기 실패: " + error.message, true);
+      return;
+    }
+    items = data || [];
+    clearStatus();
+    render();
+  }
+
+  async function addItem() {
     const text = input.value.trim();
     if (!text) return;
-    items.push({
-      id: crypto.randomUUID(),
-      text,
-      checked: false
-    });
+    addBtn.disabled = true;
+    const { data, error } = await sb
+      .from(TABLE)
+      .insert({ text, checked: false })
+      .select()
+      .single();
+    addBtn.disabled = false;
+    if (error) {
+      showStatus("추가 실패: " + error.message, true);
+      return;
+    }
+    items.push(data);
     input.value = "";
-    saveItems();
+    clearStatus();
     render();
     input.focus();
   }
 
-  function toggleItem(id) {
+  async function toggleItem(id) {
     const item = items.find(i => i.id === id);
-    if (item) {
-      item.checked = !item.checked;
-      saveItems();
+    if (!item) return;
+    const newChecked = !item.checked;
+    const { error } = await sb
+      .from(TABLE)
+      .update({ checked: newChecked })
+      .eq("id", id);
+    if (error) {
+      showStatus("수정 실패: " + error.message, true);
       render();
+      return;
     }
-  }
-
-  function deleteItem(id) {
-    items = items.filter(i => i.id !== id);
-    saveItems();
+    item.checked = newChecked;
+    clearStatus();
     render();
   }
 
-  function clearChecked() {
+  async function deleteItem(id) {
+    const { error } = await sb
+      .from(TABLE)
+      .delete()
+      .eq("id", id);
+    if (error) {
+      showStatus("삭제 실패: " + error.message, true);
+      return;
+    }
+    items = items.filter(i => i.id !== id);
+    clearStatus();
+    render();
+  }
+
+  async function clearChecked() {
     if (!items.some(i => i.checked)) return;
     if (!confirm("완료된 항목을 모두 삭제할까요?")) return;
+    const { error } = await sb
+      .from(TABLE)
+      .delete()
+      .eq("checked", true);
+    if (error) {
+      showStatus("일괄 삭제 실패: " + error.message, true);
+      return;
+    }
     items = items.filter(i => !i.checked);
-    saveItems();
+    clearStatus();
     render();
   }
 
@@ -253,7 +318,7 @@
   });
   clearBtn.addEventListener("click", clearChecked);
 
-  render();
+  loadItems();
   input.focus();
 </script>
 </body>
