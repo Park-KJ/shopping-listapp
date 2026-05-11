@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마켓 노트 — 쇼핑 리스트, 제6호</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400;1,9..144,500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #faf5ec;
+    --paper-2: #f3ecdc;
+    --ink: #2b1c2a;
+    --ink-soft: #5e4a5c;
+    --ink-mute: #9a8c97;
+    --rule: #d9cdb6;
+    --accent: #d4751a;
+    --accent-soft: #f7e6cf;
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --serif: "Fraunces", "Gowun Batang", "Noto Serif KR", serif;
+    --sans:  "Instrument Sans", "Noto Sans KR", -apple-system, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1a1218;
+      --paper-2: #221820;
+      --ink: #f3e8d2;
+      --ink-soft: #c4b5a5;
+      --ink-mute: #7a6b6f;
+      --rule: #3a2a36;
+      --accent: #e89a3c;
+      --accent-soft: #3a2418;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 28px 18px 40px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.55;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+  }
+
+  /* Masthead */
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 6px;
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(28px, 6vw, 36px);
+    letter-spacing: -0.005em;
+    line-height: 1.05;
+    color: var(--ink);
+    font-variation-settings: "opsz" 144;
+  }
+  .wordmark em {
+    font-family: "Fraunces", "Gowun Batang", serif;
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .vol {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .tagline {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-mute);
+    padding-bottom: 16px;
+    border-bottom: 3px double var(--rule);
+  }
+
+  /* Feature headline block */
+  .feature {
+    padding: 20px 0 4px;
+    display: grid;
+    gap: 6px;
+  }
+  .kicker {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .headline {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(34px, 7vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    font-variation-settings: "opsz" 144;
+    margin-top: 2px;
+  }
+  .headline .dot { color: var(--accent); }
+  .dek {
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .dek .byline {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--ink-mute);
+    display: block;
+    margin-top: 8px;
+  }
+
+  /* Section labels */
+  .section-rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 10px;
+  }
+  .section-rule .lbl {
+    font-family: var(--sans);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .section-rule .line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  /* Input */
+  .entry {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 4px;
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  #itemInput {
+    width: 100%;
+    padding: 10px 4px 10px 0;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    font-family: var(--serif);
+    font-size: 17px;
+    outline: none;
+  }
+  #itemInput::placeholder {
+    color: var(--ink-mute);
+  }
+  .input-wrap:focus-within { border-bottom-color: var(--accent); }
+
+  #addBtn {
+    padding: 0 20px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.18s var(--ease);
+    border-radius: 0;
+  }
+  #addBtn:hover { background: var(--accent); }
+  #addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Status */
+  .status {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    padding: 6px 0 0;
+  }
+  .status.error { color: var(--accent); }
+  .status.hidden { display: none; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 18px;
+    padding: 4px 0 2px;
+  }
+  .filter-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 0;
+    font-family: var(--sans);
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+    color: var(--ink-mute);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); }
+  .filter-btn.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .filter-btn.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+  }
+  .filter-count {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-mute);
+    margin-left: 4px;
+    font-weight: 400;
+    font-size: 12.5px;
+  }
+
+  /* List */
+  .list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+  }
+  .list-item {
+    display: grid;
+    grid-template-columns: 40px 1fr auto 26px;
+    column-gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+    transition: padding 0.2s var(--ease);
+    animation: fadeUp 0.35s var(--ease) both;
+  }
+  @keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: none; }
+  }
+  .list-item:hover { padding-left: 4px; }
+
+  .num {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 20px;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+    transition: color 0.18s var(--ease);
+  }
+  .list-item:hover .num { color: var(--accent); }
+  .list-item.is-checked .num { color: var(--accent); }
+
+  .item-text {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.35;
+    color: var(--ink);
+    word-break: break-word;
+    transition: color 0.2s var(--ease);
+    font-variation-settings: "opsz" 144;
+  }
+  .item-text.checked {
+    color: var(--ink-mute);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--ink-mute);
+  }
+
+  .meta {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .meta .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rule);
+    transition: background 0.2s var(--ease), transform 0.25s var(--ease);
+  }
+  .list-item.is-checked .dot {
+    background: var(--accent);
+    transform: scale(1.3);
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-mute);
+    font-family: "Fraunces", serif;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.18s var(--ease), color 0.18s var(--ease);
+  }
+  .list-item:hover .delete-btn,
+  .list-item:focus-within .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: var(--accent); }
+
+  .list-item.removing {
+    opacity: 0;
+    transform: translateX(16px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  /* Empty state */
+  .empty {
+    padding: 28px 0 22px;
+    text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+  .empty .quote {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .empty .sub {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--ink-mute);
+  }
+
+  /* By the numbers */
+  .numbers {
+    margin: 22px 0 14px;
+    padding: 16px 0 4px;
+    border-top: 3px double var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .numbers .kicker {
+    margin-bottom: 10px;
+  }
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat .v {
+    font-family: "Fraunces", serif;
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-variation-settings: "opsz" 144;
+  }
+  .stat.accent .v { color: var(--accent); }
+  .stat .l {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--ink-mute);
+  }
+
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0 10px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 2px;
+    background: var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    position: absolute;
+    inset: 0 100% 0 0;
+    background: var(--accent);
+    transition: right 0.6s var(--ease);
+  }
+  .progress-label {
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+    text-align: right;
+  }
+
+  /* Void link */
+  .void-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 2px 0 14px;
+  }
+  .clear-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--ink-soft);
+    transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
+  }
+  .clear-btn:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Colophon */
+  .colophon {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--ink-mute);
+  }
+  .colophon .italic {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+  }
+  .colophon .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .colophon .live::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    animation: pulse 2.2s var(--ease) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .list-item, .colophon .live::before { animation: none; }
+    * { transition: none !important; }
+  }
+
+  /* Narrow screen */
+  @media (max-width: 480px) {
+    body { padding: 22px 14px 32px; }
+    .list-item { grid-template-columns: 32px 1fr auto 22px; column-gap: 10px; padding: 11px 0; }
+    .num { font-size: 18px; }
+    .item-text { font-size: 17px; }
+    .stat .v { font-size: 28px; }
+    .delete-btn { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+
+    <!-- Masthead -->
+    <header class="masthead">
+      <div class="wordmark">마켓 <em>노트</em></div>
+      <div class="vol" id="vol">제1권 · 제6호</div>
+    </header>
+    <div class="tagline">2026 창간 · 매주 갱신되는 식료품 기록</div>
+
+    <!-- Feature headline -->
+    <section class="feature">
+      <span class="kicker">이번 주의 목록</span>
+      <h1 class="headline">쇼핑 리스트<span class="dot">.</span></h1>
+      <p class="dek">
+        다음 시장 방문 전에 챙겨야 할 것들을 손으로 적고, 클라우드에 남깁니다.
+        <span class="byline" id="dateline">에디션 · —</span>
+      </p>
+    </section>
+
+    <!-- Entry -->
+    <div class="section-rule">
+      <span class="lbl">+ 새 항목</span>
+      <span class="line"></span>
+    </div>
+    <div class="entry">
+      <div class="input-wrap">
+        <input type="text" id="itemInput" placeholder="항목을 적고 엔터를 누르세요" maxlength="100" autocomplete="off">
+      </div>
+      <button id="addBtn">추가</button>
+    </div>
+    <div class="status hidden" id="status"></div>
+
+    <!-- Filters -->
+    <div class="section-rule">
+      <span class="lbl">장부</span>
+      <span class="line"></span>
+    </div>
+    <div class="filters" role="tablist">
+      <button class="filter-btn active" data-filter="all">전체 <span class="filter-count" id="cAll">0</span></button>
+      <button class="filter-btn" data-filter="active">진행 <span class="filter-count" id="cOpen">0</span></button>
+      <button class="filter-btn" data-filter="checked">완료 <span class="filter-count" id="cDone">0</span></button>
+    </div>
+
+    <!-- List -->
+    <ul class="list" id="list"></ul>
+
+    <!-- By the numbers -->
+    <section class="numbers">
+      <span class="kicker">한눈에</span>
+      <div class="numbers-grid">
+        <div class="stat"><span class="v" id="sTotal">0</span><span class="l">전체</span></div>
+        <div class="stat accent"><span class="v" id="sDone">0</span><span class="l">완료</span></div>
+        <div class="stat"><span class="v" id="sRem">0</span><span class="l">남은 항목</span></div>
+      </div>
+      <div class="progress">
+        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+        <div class="progress-label" id="progLabel">0%</div>
+      </div>
+    </section>
+
+    <div class="void-row">
+      <button class="clear-btn" id="clearBtn">완료 항목 비우기</button>
+    </div>
+
+    <!-- Colophon -->
+    <footer class="colophon">
+      <span>편집 · <span class="italic">Park-KJ</span></span>
+      <span class="live">실시간 · Supabase</span>
+    </footer>
+
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://jnivnctqgxvkapxqqtfw.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cOiGR8HCv9eHiwf9NKveNg_jPDKNwWm";
+  const TABLE = "shopping_items";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  const input = document.getElementById("itemInput");
+  const addBtn = document.getElementById("addBtn");
+  const list = document.getElementById("list");
+  const clearBtn = document.getElementById("clearBtn");
+  const statusEl = document.getElementById("status");
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const sTotal = document.getElementById("sTotal");
+  const sDone = document.getElementById("sDone");
+  const sRem = document.getElementById("sRem");
+  const cAll = document.getElementById("cAll");
+  const cOpen = document.getElementById("cOpen");
+  const cDone = document.getElementById("cDone");
+  const progFill = document.getElementById("progFill");
+  const progLabel = document.getElementById("progLabel");
+  const dateline = document.getElementById("dateline");
+  const vol = document.getElementById("vol");
+
+  let items = [];
+  let activeFilter = "all";
+
+  (function setDateline() {
+    const now = new Date();
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    const pad = (n) => String(n).padStart(2, "0");
+    dateline.textContent = `에디션 · ${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} (${days[now.getDay()]})`;
+    const weekNo = Math.ceil(((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
+    vol.textContent = `제${Math.max(1, now.getFullYear() - 2025)}권 · 제${weekNo}호`;
+  })();
+
+  function showStatus(msg, isError = false) {
+    statusEl.textContent = msg;
+    statusEl.classList.remove("hidden");
+    statusEl.classList.toggle("error", isError);
+    if (!isError) {
+      clearTimeout(showStatus._t);
+      showStatus._t = setTimeout(() => statusEl.classList.add("hidden"), 1600);
+    }
+  }
+
+  function relTime(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const m = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (m < 1) return "방금";
+    if (m < 60) return m + "분 전";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "시간 전";
+    const day = Math.floor(h / 24);
+    return day + "일 전";
+  }
+
+  function visibleItems() {
+    if (activeFilter === "active") return items.filter(i => !i.checked);
+    if (activeFilter === "checked") return items.filter(i => i.checked);
+    return items;
+  }
+
+  function render() {
+    list.innerHTML = "";
+    const view = visibleItems();
+
+    if (view.length === 0) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      const quote =
+        activeFilter === "checked" ? "아직 완료한 항목이 없습니다." :
+        activeFilter === "active" ? "전부 끝났습니다. 깨끗한 장부." :
+        "빈 페이지. 이번 주는 당신이 채울 차례입니다.";
+      const sub =
+        activeFilter === "checked" ? "체크하며 진행해 보세요" :
+        activeFilter === "active" ? "전체 탭에서 기록을 확인하세요" :
+        "한 줄부터 시작해 보세요";
+      li.innerHTML = `<div class="quote">"${quote}"</div><div class="sub">— ${sub}</div>`;
+      list.appendChild(li);
+    } else {
+      view.forEach((item, i) => {
+        const idx = items.indexOf(item) + 1;
+        const li = document.createElement("li");
+        li.className = "list-item" + (item.checked ? " is-checked" : "");
+        li.dataset.id = item.id;
+        li.style.animationDelay = Math.min(i * 0.03, 0.28) + "s";
+
+        const num = document.createElement("span");
+        num.className = "num";
+        num.textContent = String(idx).padStart(2, "0");
+
+        const txt = document.createElement("span");
+        txt.className = "item-text" + (item.checked ? " checked" : "");
+        txt.textContent = item.text;
+
+        const meta = document.createElement("span");
+        meta.className = "meta";
+        meta.innerHTML = `<span>${relTime(item.created_at)}</span><span class="dot" aria-hidden="true"></span>`;
+
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.title = "삭제";
+        del.textContent = "×";
+        del.addEventListener("click", (e) => { e.stopPropagation(); deleteItem(item.id); });
+
+        li.appendChild(num);
+        li.appendChild(txt);
+        li.appendChild(meta);
+        li.appendChild(del);
+        li.addEventListener("click", () => toggleItem(item.id));
+        list.appendChild(li);
+      });
+    }
+
+    const total = items.length;
+    const done = items.filter(i => i.checked).length;
+    sTotal.textContent = String(total).padStart(2, "0");
+    sDone.textContent = String(done).padStart(2, "0");
+    sRem.textContent = String(total - done).padStart(2, "0");
+    cAll.textContent = String(total).padStart(2, "0");
+    cOpen.textContent = String(total - done).padStart(2, "0");
+    cDone.textContent = String(done).padStart(2, "0");
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    progFill.style.right = (100 - pct) + "%";
+    progLabel.textContent = pct + "%";
+  }
+
+  async function loadItems() {
+    showStatus("장부 불러오는 중…");
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) { showStatus("불러오기 실패 — " + error.message, true); return; }
+    items = data || [];
+    statusEl.classList.add("hidden");
+    render();
+  }
+
+  async function addItem() {
+    const text = input.value.trim();
+    if (!text) return;
+    addBtn.disabled = true;
+    const { data, error } = await sb
+      .from(TABLE)
+      .insert({ text, checked: false })
+      .select()
+      .single();
+    addBtn.disabled = false;
+    if (error) { showStatus("추가 실패 — " + error.message, true); return; }
+    items.push(data);
+    input.value = "";
+    showStatus("기록됨");
+    render();
+    input.focus();
+  }
+
+  async function toggleItem(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const next = !item.checked;
+    item.checked = next;
+    render();
+    const { error } = await sb.from(TABLE).update({ checked: next }).eq("id", id);
+    if (error) {
+      item.checked = !next;
+      showStatus("수정 실패 — " + error.message, true);
+      render();
+    }
+  }
+
+  async function deleteItem(id) {
+    const node = list.querySelector(`[data-id="${id}"]`);
+    if (node) node.classList.add("removing");
+    const { error } = await sb.from(TABLE).delete().eq("id", id);
+    if (error) {
+      showStatus("삭제 실패 — " + error.message, true);
+      if (node) node.classList.remove("removing");
+      return;
+    }
+    setTimeout(() => {
+      items = items.filter(i => i.id !== id);
+      render();
+    }, 200);
+  }
+
+  async function clearChecked() {
+    if (!items.some(i => i.checked)) return;
+    if (!confirm("완료된 항목을 모두 비울까요?")) return;
+    const { error } = await sb.from(TABLE).delete().eq("checked", true);
+    if (error) { showStatus("비우기 실패 — " + error.message, true); return; }
+    items = items.filter(i => !i.checked);
+    showStatus("비웠어요");
+    render();
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  addBtn.addEventListener("click", addItem);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+  clearBtn.addEventListener("click", clearChecked);
+
+  loadItems();
+  input.focus();
+</script>
+</body>
+</html>
