@@ -1,45 +1,60 @@
-name: Keep Supabase Alive
+ name: Keep Supabase Alive
 
-# Supabase 무료 요금제는 7일간 미사용 시 프로젝트를 자동 중지(Pause)합니다.
-# 이 워크플로가 주기적으로 REST API를 호출해 "사용 중" 상태를 유지합니다.
+  # Supabase 무료 요금제는 7일간 미사용 시 프로젝트를 자동 중지(Pause)합니다.
+  # 이 워크플로가 주기적으로 REST API를 호출해 "사용 중" 상태를 유지합니다.
 
-on:
-  schedule:
-    # 2일마다 07:17 UTC 실행.
-    # - 7일 한도에 대해 2일 주기는 한 번 누락(GitHub 스케줄 지연/드롭)돼도 안전한 여유.
-    # - 정각(00:00 UTC)은 GitHub Actions 큐 부하가 가장 커 지연·누락이 잦으므로 의도적으로 피함.
-    - cron: '17 7 */2 * *'
-  workflow_dispatch:        # Actions 탭에서 수동 실행 버튼 활성화
+  on:
+    schedule:
+      # 2일마다 07:17 UTC 실행.
+      # - 7일 한도에 대해 2일 주기는 한 번 누락(GitHub 스케줄 지연/드롭)돼도 안전한 여유.
+      # - 정각(00:00 UTC)은 GitHub Actions 큐 부하가 가장 커 지연·누락이 잦으므로 의도적으로 피함.
+      - cron: '17 7 */2 * *'
+    workflow_dispatch:        # Actions 탭에서 수동 실행 버튼 활성화
 
-# 하트비트 커밋(아래 참고)을 위해 쓰기 권한 부여
-permissions:
-  contents: write
+  # 하트비트 커밋(아래 참고)을 위해 쓰기 권한 부여
+  permissions:
+    contents: write
 
-jobs:
-  ping:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  jobs:
+    ping:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
 
-      - name: Ping Supabase REST API
-        run: |
-          # -f : HTTP 4xx/5xx면 curl이 0이 아닌 코드로 종료 -> 워크플로 실패 -> 메일 알림.
-          #      (예시 코드는 키 만료/프로젝트 중지에도 "성공"으로 끝나 문제를 못 잡음)
-          # --retry : 일시적 네트워크 오류 자동 재시도
-          curl -sSf --retry 3 --retry-delay 10 --max-time 30 \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/shopping_items?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+        - name: Ping Supabase REST API
+          env:
+            # 시크릿을 셸에 직접 보간하지 않고 env로 전달(셸 인젝션 방지 + 디버깅 용이)
+            SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+            SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          run: |
+            # 복사 시 끼어든 앞뒤 공백·개행 제거 (curl URL malformed 주원인)
+            url="$(printf '%s' "$SUPABASE_URL" | tr -d '[:space:]')"
+            key="$(printf '%s' "$SUPABASE_ANON_KEY" | tr -d '[:space:]')"
 
-      - name: Record heartbeat
-        run: |
-          # GitHub는 "저장소에 60일간 아무 활동(커밋)이 없으면" 스케줄 워크플로를
-          # 자동 비활성화합니다. 워크플로 '실행'은 이 활동에 포함되지 않습니다.
-          # 매 실행마다 타임스탬프 파일을 커밋해 60일 타이머를 갱신 -> 수동 재활성화 불필요.
-          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/last-ping.txt
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/last-ping.txt
-          git commit -m "chore: supabase keep-alive heartbeat [skip ci]" || exit 0
-          git push
+            # 시크릿 미등록/오타/Variables 탭 실수 시 명확히 실패시킴
+            if [ -z "$url" ]; then echo "::error::SUPABASE_URL 시크릿이 비어 있음 (Secrets 탭에 등록됐는지 확인)"; exit 1; fi
+            if [ -z "$key" ]; then echo "::error::SUPABASE_ANON_KEY 시크릿이 비어 있음 (Secrets 탭에 등록됐는지 확인)"; exit 1; fi
+
+            # 값은 GitHub가 자동 마스킹하므로 길이만 출력(진단용). URL은 40자여야 정상.
+            echo "URL 길이: ${#url}  /  KEY 길이: ${#key}"
+
+            # -f : HTTP 4xx/5xx면 curl이 0이 아닌 코드로 종료 -> 워크플로 실패 -> 메일 알림.
+            #      (예시 코드는 키 만료/프로젝트 중지에도 "성공"으로 끝나 문제를 못 잡음)
+            # --retry : 일시적 네트워크 오류 자동 재시도
+            curl -sSf --retry 3 --retry-delay 10 --max-time 30 \
+              "$url/rest/v1/shopping_items?select=id&limit=1" \
+              -H "apikey: $key" \
+              -H "Authorization: Bearer $key"
+
+        - name: Record heartbeat
+          run: |
+            # GitHub는 "저장소에 60일간 아무 활동(커밋)이 없으면" 스케줄 워크플로를
+            # 자동 비활성화합니다. 워크플로 '실행'은 이 활동에 포함되지 않습니다.
+            # 매 실행마다 타임스탬프 파일을 커밋해 60일 타이머를 갱신 -> 수동 재활성화 불필요.
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/last-ping.txt
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/last-ping.txt
+            git commit -m "chore: supabase keep-alive heartbeat [skip ci]" || exit 0
+            git push
